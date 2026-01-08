@@ -22,9 +22,8 @@
             "homepage": "https://github.com/sonata-project/SonataAdminBundle/contributors"
         }
     ],
-    "homepage": "https://sonata-project.org/bundles/admin",
     "require": {
-        "php": "^7.3 || ^8.0",
+        "php": "^8.0 || ^8.1 || ^8.2",
         "ext-json": "*",
         "doctrine/collections": "^1.6",
         "doctrine/common": "^2.7 || ^3.0",
@@ -82,7 +81,7 @@
         "symfony/css-selector": "^4.4 || ^5.1",
         "symfony/filesystem": "^4.4 || ^5.1",
         "symfony/maker-bundle": "^1.25",
-        "symfony/phpunit-bridge": "^5.1.8",
+        "symfony/templating": "^4.4",
         "symfony/yaml": "^4.4 || ^5.1",
         "vimeo/psalm": "^4.9.2"
     },
@@ -105,7 +104,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Sonata\\AdminBundle\\Tests\\": "tests/"
+            "Sonata\\AdminBundle\\Tests\\": "tests/",
+            "Symfony\\Bridge\\PhpUnit\\": "tests/PhpUnit/"
         }
     },
     "config": {
