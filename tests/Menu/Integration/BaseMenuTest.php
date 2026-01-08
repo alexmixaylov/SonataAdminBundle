@@ -35,6 +35,7 @@ abstract class BaseMenuTest extends TestCase
     {
         // Adapt to both bundle and project-wide test strategy
         $twigPaths = array_filter([
+            sprintf('%s/../../../src/Resources/views', __DIR__),
             sprintf('%s/../../../../../../vendor/knplabs/knp-menu/src/Knp/Menu/Resources/views', __DIR__),
             sprintf('%s/../../../vendor/knplabs/knp-menu/src/Knp/Menu/Resources/views', __DIR__),
             sprintf('%s/../../../src/Resources/views', __DIR__),
