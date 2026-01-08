@@ -4096,7 +4096,7 @@ class CRUDControllerTest extends TestCase
         $result = $controller->batchAction();
 
         $this->assertInstanceOf(Response::class, $result);
-        $this->assertMatchesRegularExpression('/Redirecting to list/', $result->getContent());
+        $this->assertRegExp('/Redirecting to list/', $result->getContent());
     }
 
     /**
