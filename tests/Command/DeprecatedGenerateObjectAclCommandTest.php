@@ -66,7 +66,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithEmptyManipulators(): void
@@ -84,7 +84,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulatorNotFound(): void
@@ -119,7 +119,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/Admin class is using a manager type that has no manipulator implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/Admin class is using a manager type that has no manipulator implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulatorNotObjectAclManipulatorInterface(): void
@@ -154,7 +154,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/The interface "ObjectAclManipulatorInterface" is not implemented for/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/The interface "ObjectAclManipulatorInterface" is not implemented for/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulator(): void
@@ -244,7 +244,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
             '--user_model' => 'AppBundle:User',
         ]);
 
-        $this->assertRegExp(sprintf('/The command "%s" has a dependency on a non-existent service "doctrine"./', GenerateObjectAclCommand::getDefaultName()), $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression(sprintf('/The command "%s" has a dependency on a non-existent service "doctrine"./', GenerateObjectAclCommand::getDefaultName()), $commandTester->getDisplay());
     }
 
     public function testExecuteWithDeprecatedUserModelNotationAndInternalSetter(): void
@@ -271,7 +271,7 @@ final class DeprecatedGenerateObjectAclCommandTest extends TestCase
             '--user_model' => 'AppBundle:User',
         ]);
 
-        $this->assertRegExp('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithUserModel(): void

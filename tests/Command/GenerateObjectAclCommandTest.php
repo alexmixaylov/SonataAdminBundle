@@ -58,7 +58,7 @@ class GenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithEmptyManipulators(): void
@@ -74,7 +74,7 @@ class GenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/No manipulators are implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulatorNotFound(): void
@@ -99,7 +99,7 @@ class GenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/Admin class is using a manager type that has no manipulator implemented : ignoring/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/Admin class is using a manager type that has no manipulator implemented : ignoring/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulatorNotObjectAclManipulatorInterface(): void
@@ -124,7 +124,7 @@ class GenerateObjectAclCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertRegExp('/The interface "ObjectAclManipulatorInterface" is not implemented for/', $commandTester->getDisplay());
+        $this->assertMatchesRegularExpression('/The interface "ObjectAclManipulatorInterface" is not implemented for/', $commandTester->getDisplay());
     }
 
     public function testExecuteWithManipulator(): void
