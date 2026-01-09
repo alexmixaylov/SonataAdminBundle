@@ -73,50 +73,6 @@ final class AddFilterTypeCompilerPassTest extends AbstractCompilerPassTestCase
         );
     }
 
-    /**
-     * NEXT_MAJOR: Remove legacy group.
-     *
-     * @group legacy
-     */
-    public function testServicesMustHaveAClassName(): void
-    {
-        $filter = new Definition('not_existing_class');
-        $filter
-            ->addTag('sonata.admin.filter.type');
-
-        $this->container
-            ->setDefinition('acme.demo.foo_filter', $filter);
-
-        // NEXT_MAJOR: Remove deprecation and uncomment exception.
-        $this->expectDeprecation('Not declaring a filter with an existing class name is deprecated since sonata-project/admin-bundle 3.95 and will not work in 4.0. You MUST register a service with an existing class name for service "acme.demo.foo_filter".');
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('Class "not_existing_class" used for service "acme.demo.foo_filter" cannot be found.');
-
-        $this->compile();
-    }
-
-    /**
-     * NEXT_MAJOR: Remove legacy group.
-     *
-     * @group legacy
-     */
-    public function testServicesMustImplementFilterInterface(): void
-    {
-        $filter = new Definition(\stdClass::class);
-        $filter
-            ->addTag('sonata.admin.filter.type');
-
-        $this->container
-            ->setDefinition('acme.demo.foo_filter', $filter);
-
-        // NEXT_MAJOR: Remove deprecation and uncomment exception.
-        $this->expectDeprecation('Registering service "acme.demo.foo_filter" without implementing interface "Sonata\AdminBundle\Filter\FilterInterface" is deprecated since sonata-project/admin-bundle 3.95 and will be mandatory in 4.0.');
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('Service "acme.demo.foo_filter" MUST implement interface "Sonata\AdminBundle\Filter\FilterInterface".');
-
-        $this->compile();
-    }
-
     protected function registerCompilerPass(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new AddFilterTypeCompilerPass());

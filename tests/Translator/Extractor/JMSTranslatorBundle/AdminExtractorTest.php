@@ -111,7 +111,6 @@ class AdminExtractorTest extends TestCase
             ->method('getShow')
             ->willReturnCallback(function (): void {
                 $this->assertSame('foo', $this->adminExtractor->trans('foo', [], 'foo_admin_domain'));
-                $this->assertSame('foo', $this->adminExtractor->transChoice('foo', 1, [], 'foo_admin_domain'));
             });
         $this->fooAdmin
             ->method('getLabel')

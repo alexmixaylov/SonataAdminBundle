@@ -74,20 +74,6 @@ class FilterFactoryTest extends TestCase
      *
      * @group legacy
      */
-    public function testItTriggersDeprecationWithoutTheService(): void
-    {
-        $filter = new FilterFactory(new Container());
-
-        $this->expectDeprecation('Not declaring a filter as service is deprecated since sonata-project/admin-bundle 3.95 and will not work in 4.0. You MUST register a service with class name (Sonata\AdminBundle\Tests\Fixtures\Filter\FooFilter) instead.');
-
-        $filter->create('test', FooFilter::class);
-    }
-
-    /**
-     * NEXT_MAJOR: Remove this test.
-     *
-     * @group legacy
-     */
     public function testInvalidTypeInstance(): void
     {
         $container = new Container();

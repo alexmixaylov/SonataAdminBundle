@@ -32,7 +32,6 @@ final class FormTypeFieldExtensionTest extends TestCase
     {
         $extension = new FormTypeFieldExtension([], []);
 
-        static::assertSame(FormType::class, $extension->getExtendedType());
         static::assertSame([FormType::class], FormTypeFieldExtension::getExtendedTypes());
     }
 
