@@ -65,3 +65,8 @@ services:
         arguments: [~, Sonata\AdminBundle\Tests\App\Model\Translated, ~]
         tags:
             - {name: sonata.admin, manager_type: test, group: 'group_label', label: 'admin_label'}
+
+    Sonata\AdminBundle\Controller\CRUDController:
+        public: true
+        calls:
+            - setContainer: ['@service_container']
