@@ -288,32 +288,6 @@ class SonataAdminExtensionTest extends TestCase
      *
      * @group legacy
      */
-    public function testConstructTriggersDeprecationWithAuthorizationCheckerArgument(): void
-    {
-        $this->expectDeprecation(sprintf(
-            'Passing an instance of "%s" as argument 5 for "%s::__construct()" is deprecated since'
-            .' sonata-project/admin-bundle 3.82 and will throw a \TypeError error in version 4.0. You MUST pass an instance'
-            .' of "%s" instead and pass an instance of "%s" as argument 6.',
-            AuthorizationCheckerInterface::class,
-            SonataAdminExtension::class,
-            PropertyAccessorInterface::class,
-            AuthorizationCheckerInterface::class
-        ));
-
-        new SonataAdminExtension(
-            $this->pool,
-            null,
-            $this->translator,
-            $this->container,
-            $this->securityChecker
-        );
-    }
-
-    /**
-     * NEXT_MAJOR: Remove this method.
-     *
-     * @group legacy
-     */
     public function testConstructThrowsExceptionWithWrongTranslationArgument(): void
     {
         $this->expectException(\TypeError::class);

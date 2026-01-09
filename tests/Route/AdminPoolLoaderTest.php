@@ -77,32 +77,4 @@ class AdminPoolLoaderTest extends TestCase
         static::assertInstanceOf(SymfonyRoute::class, $collection->get('baseRouteNameBar_bar'));
         static::assertInstanceOf(SymfonyRoute::class, $collection->get('baseRouteNameBar_bar'));
     }
-
-    /**
-     * NEXT_MAJOR: Remove this method.
-     *
-     * @group legacy
-     */
-    public function testThrowsADeprecationConstructingWithContainer(): void
-    {
-        $container = new Container();
-        $pool = new Pool($container);
-
-        $this->expectDeprecation('Passing more than one argument to "Sonata\AdminBundle\Route\AdminPoolLoader::__construct()" is deprecated since sonata-project/admin-bundle 3.95.');
-        new AdminPoolLoader($pool, ['foo_admin', 'bar_admin'], $container);
-    }
-
-    /**
-     * NEXT_MAJOR: Remove this method.
-     *
-     * @group legacy
-     */
-    public function testThrowsADeprecationConstructingWithAdminServicesIds(): void
-    {
-        $container = new Container();
-        $pool = new Pool($container);
-
-        $this->expectDeprecation('Passing more than one argument to "Sonata\AdminBundle\Route\AdminPoolLoader::__construct()" is deprecated since sonata-project/admin-bundle 3.95.');
-        new AdminPoolLoader($pool, ['foo_admin', 'bar_admin']);
-    }
 }
