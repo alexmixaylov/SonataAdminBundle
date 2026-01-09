@@ -23,7 +23,6 @@ use Sonata\AdminBundle\Admin\BreadcrumbsBuilderInterface;
 use Sonata\AdminBundle\Admin\Pool;
 use Sonata\AdminBundle\Security\Handler\SecurityHandlerInterface;
 use Sonata\AdminBundle\Translator\LabelTranslatorStrategyInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * NEXT_MAJOR: Remove this class and the jms/translation-bundle dev dependency.
@@ -32,7 +31,7 @@ use Symfony\Component\Translation\TranslatorInterface;
  *
  * @final since sonata-project/admin-bundle 3.52
  */
-class AdminExtractor implements ExtractorInterface, TranslatorInterface, SecurityHandlerInterface, LabelTranslatorStrategyInterface
+class AdminExtractor implements ExtractorInterface, SecurityHandlerInterface, LabelTranslatorStrategyInterface
 {
     /**
      * @var LoggerInterface|null

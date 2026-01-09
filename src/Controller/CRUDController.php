@@ -26,10 +26,7 @@ use Sonata\AdminBundle\FieldDescription\FieldDescriptionCollection;
 use Sonata\AdminBundle\Templating\TemplateRegistryInterface;
 use Sonata\AdminBundle\Util\AdminObjectAclData;
 use Sonata\AdminBundle\Util\AdminObjectAclManipulator;
-use Symfony\Bundle\FrameworkBundle\Controller\ControllerTrait;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\FormView;
@@ -51,17 +48,12 @@ use Symfony\Component\Security\Csrf\CsrfToken;
  *
  * @phpstan-template T of object
  */
-class CRUDController implements ContainerAwareInterface
+class CRUDController extends AbstractController
 {
-    // NEXT_MAJOR: Don't use these traits anymore (inherit from Controller instead)
-    use ContainerAwareTrait, ControllerTrait {
-        ControllerTrait::render as originalRender;
-    }
-
     /**
      * @var \Symfony\Component\DependencyInjection\ContainerInterface
      */
-    protected $container;
+    protected  $container;
 
     /**
      * The related Admin class.
@@ -79,14 +71,9 @@ class CRUDController implements ContainerAwareInterface
      */
     private $templateRegistry;
 
-    /**
-     * NEXT_MAJOR: We should not use this method for configuration, create a listener to call configureAdmin method.
-     */
-    public function setContainer(?ContainerInterface $container = null)
+    protected function originalRender(string $view, array $parameters = [], Response $response = null): Response
     {
-        $this->container = $container;
-
-        $this->configure('sonata_deprecation_mute');
+        return parent::render($view, $parameters, $response);
     }
 
     /**
@@ -101,7 +88,7 @@ class CRUDController implements ContainerAwareInterface
      *
      * @deprecated since sonata-project/admin-bundle 3.27, to be removed in 4.0. Use Sonata\AdminBundle\Controller\CRUDController::renderWithExtraParams() instead.
      */
-    public function render($view, array $parameters = [], ?Response $response = null)
+    public function render($view, array $parameters = [], ?Response $response = null): Response
     {
         @trigger_error(sprintf(
             'Method %1$s::render has been renamed to %1$s::renderWithExtraParams.',
