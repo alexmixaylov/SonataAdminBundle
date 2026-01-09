@@ -23,6 +23,7 @@ use Sonata\AdminBundle\Admin\BreadcrumbsBuilderInterface;
 use Sonata\AdminBundle\Admin\Pool;
 use Sonata\AdminBundle\Security\Handler\SecurityHandlerInterface;
 use Sonata\AdminBundle\Translator\LabelTranslatorStrategyInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * NEXT_MAJOR: Remove this class and the jms/translation-bundle dev dependency.
@@ -124,15 +125,9 @@ class AdminExtractor implements ExtractorInterface, SecurityHandlerInterface, La
             $this->labelStrategy = $admin->getLabelTranslatorStrategy();
             $this->domain = $admin->getTranslationDomain();
 
-            $admin->setTranslator($this);
             $admin->setSecurityHandler($this);
             $admin->setLabelTranslatorStrategy($this);
 
-            //            foreach ($admin->getChildren() as $child) {
-            //                $child->setTranslator($this);
-            //            }
-
-            // call the different public method
             $methods = [
                 'getShow',
                 'getDatagrid',

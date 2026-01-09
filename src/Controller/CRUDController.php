@@ -14,19 +14,22 @@ declare(strict_types=1);
 namespace Sonata\AdminBundle\Controller;
 
 use Doctrine\Inflector\InflectorFactory;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Admin\AdminInterface;
+use Sonata\AdminBundle\Admin\Pool;
 use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
 use Sonata\AdminBundle\Exception\LockException;
 use Sonata\AdminBundle\Exception\ModelManagerException;
 use Sonata\AdminBundle\Exception\ModelManagerThrowable;
 use Sonata\AdminBundle\FieldDescription\FieldDescriptionCollection;
+use Sonata\AdminBundle\Model\AuditManagerInterface;
 use Sonata\AdminBundle\Templating\TemplateRegistryInterface;
 use Sonata\AdminBundle\Util\AdminObjectAclData;
 use Sonata\AdminBundle\Util\AdminObjectAclManipulator;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\FormView;
@@ -42,27 +45,99 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Csrf\CsrfToken;
+use Twig\Environment;
 
 /**
  * @author Thomas Rabaix <thomas.rabaix@sonata-project.org>
  *
  * @phpstan-template T of object
  */
-class CRUDController extends AbstractController
+class CRUDController implements ContainerAwareInterface
 {
-    /**
-     * @var \Symfony\Component\DependencyInjection\ContainerInterface
-     */
-    protected  $container;
+    protected ?AdminInterface $admin = null;
+    protected ?Request $request = null;
+    protected ?ContainerInterface $container = null;
 
-    /**
-     * The related Admin class.
-     *
-     * @var AdminInterface
-     *
-     * @phpstan-var AdminInterface<T>
-     */
-    protected $admin;
+    public function setContainer(ContainerInterface $container = null): void
+    {
+        $this->container = $container;
+    }
+
+    protected function get(string $id)
+    {
+        if (null === $this->container) {
+            throw new \LogicException('Container is not set.');
+        }
+
+        return $this->container->get($id);
+    }
+
+    protected function has(string $id)
+    {
+        if (null === $this->container) {
+            throw new \LogicException('Container is not set.');
+        }
+
+        return $this->container->has($id);
+    }
+
+    protected function addFlash(string $type, string $message): void
+    {
+        $request = $this->getRequest();
+
+        if (null === $request || !$request->hasSession()) {
+            return;
+        }
+
+        $request->getSession()->getFlashBag()->add($type, $message);
+    }
+
+    protected function redirect(string $url, int $status = 302): RedirectResponse
+    {
+        return new RedirectResponse($url, $status);
+    }
+
+    protected function createNotFoundException(string $message = 'Not Found', ?\Throwable $previous = null): NotFoundHttpException
+    {
+        return new NotFoundHttpException($message, $previous);
+    }
+    protected function originalRender(
+        string $view,
+        array $parameters = [],
+        ?Response $response = null
+    ): Response {
+        /** @var Environment $twig */
+        $twig = $this->get('twig');
+
+        $content = $twig->render($view, $parameters);
+
+        if (null === $response) {
+            $response = new Response();
+        }
+
+        $response->setContent($content);
+
+        return $response;
+    }
+
+    final public function setAdmin(AdminInterface $admin): void
+    {
+        $this->admin = $admin;
+    }
+
+    final public function setRequest(Request $request): void
+    {
+        $this->request = $request;
+    }
+
+    protected function getAdmin(): AdminInterface
+    {
+        if (null === $this->admin) {
+            throw new \LogicException('Admin is not set on CRUDController.');
+        }
+
+        return $this->admin;
+    }
 
     /**
      * The template registry of the related Admin class.
@@ -70,11 +145,6 @@ class CRUDController extends AbstractController
      * @var TemplateRegistryInterface
      */
     private $templateRegistry;
-
-    protected function originalRender(string $view, array $parameters = [], Response $response = null): Response
-    {
-        return parent::render($view, $parameters, $response);
-    }
 
     /**
      * NEXT_MAJOR: Remove this method.
@@ -114,6 +184,29 @@ class CRUDController extends AbstractController
         return $this->originalRender($view, $this->addRenderExtraParams($parameters), $response);
     }
 
+    protected function ensureAdmin(): void
+    {
+        if (null !== $this->admin) {
+            return;
+        }
+
+        $request = $this->getRequest();
+        if (null === $request) {
+            return;
+        }
+
+        $adminCode = $request->attributes->get('_sonata_admin');
+        if (!$adminCode) {
+            return;
+        }
+
+        /** @var Pool $pool */
+        $pool = $this->container->get('sonata.admin.pool.do-not-use');
+        $this->admin = $pool->getAdminByAdminCode($adminCode);
+
+        $this->admin->setRequest($request);
+    }
+
     /**
      * List action.
      *
@@ -123,6 +216,8 @@ class CRUDController extends AbstractController
      */
     public function listAction()
     {
+        $this->ensureAdmin();
+
         $request = $this->getRequest();
 
         $this->assertObjectExists($request);
@@ -210,6 +305,8 @@ class CRUDController extends AbstractController
      */
     public function deleteAction($id) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         $request = $this->getRequest();
         $this->assertObjectExists($request, true);
 
@@ -307,6 +404,8 @@ class CRUDController extends AbstractController
      */
     public function editAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
                 'Support for the "id" route param as argument 1 at `%s()` is deprecated since'
@@ -436,6 +535,8 @@ class CRUDController extends AbstractController
      */
     public function batchAction()
     {
+        $this->ensureAdmin();
+
         $request = $this->getRequest();
         $restMethod = $request->getMethod();
 
@@ -585,6 +686,8 @@ class CRUDController extends AbstractController
      */
     public function createAction()
     {
+        $this->ensureAdmin();
+
         $request = $this->getRequest();
 
         $this->assertObjectExists($request);
@@ -711,6 +814,8 @@ class CRUDController extends AbstractController
      */
     public function showAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
                 'Support for the "id" route param as argument 1 at `%s()` is deprecated since'
@@ -765,6 +870,8 @@ class CRUDController extends AbstractController
      */
     public function historyAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
                 'Support for the "id" route param as argument 1 at `%s()` is deprecated since'
@@ -822,6 +929,8 @@ class CRUDController extends AbstractController
      */
     public function historyViewRevisionAction($id = null, $revision = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         $request = $this->getRequest();
         $this->assertObjectExists($request, true);
 
@@ -882,6 +991,8 @@ class CRUDController extends AbstractController
      */
     public function historyCompareRevisionsAction($id = null, $baseRevision = null, $compareRevision = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         $this->admin->checkAccess('historyCompareRevisions');
 
         $request = $this->getRequest();
@@ -971,6 +1082,8 @@ class CRUDController extends AbstractController
      */
     public function exportAction(Request $request)
     {
+        $this->ensureAdmin();
+
         $this->admin->checkAccess('export');
 
         $format = $request->get('format');
@@ -1026,6 +1139,8 @@ class CRUDController extends AbstractController
      */
     public function aclAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
+        $this->ensureAdmin();
+
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
                 'Support for the "id" route param as argument 1 at `%s()` is deprecated since'
