@@ -25,14 +25,14 @@ class FooArrayAccess implements \ArrayAccess
     }
 
     // methods to enable ArrayAccess
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $value = $this->offsetGet($offset);
 
         return null !== $value;
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         $offset = str_replace('_', '', $offset); // method names always use camels, field names can use snakes
         $methodName = "get$offset";

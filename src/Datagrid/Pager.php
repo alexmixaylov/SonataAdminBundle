@@ -822,6 +822,22 @@ abstract class Pager implements \Iterator, \Countable, \Serializable, PagerInter
         return $this->getNbResults();
     }
 
+    public function __serialize(): array
+    {
+        $vars = get_object_vars($this);
+        unset($vars['query']);
+
+        return $vars;
+    }
+
+    public function __unserialize(array $data): void
+    {
+        foreach ($data as $name => $value) {
+            $this->$name = $value;
+        }
+    }
+
+
     /**
      * NEXT_MAJOR: Remove this method.
      *

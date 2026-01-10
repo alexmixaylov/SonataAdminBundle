@@ -27,10 +27,7 @@ class FormBuilderIterator extends \RecursiveArrayIterator
      */
     protected static $reflection;
 
-    /**
-     * @var FormBuilderInterface
-     */
-    protected $formBuilder;
+    protected FormBuilderInterface $formBuilder;
 
     /**
      * NEXT_MAJOR: Remove this property.
@@ -39,7 +36,7 @@ class FormBuilderIterator extends \RecursiveArrayIterator
      *
      * @var mixed[]
      */
-    protected $keys = [];
+    protected array $keys = [];
 
     /**
      * @var string
@@ -77,12 +74,12 @@ class FormBuilderIterator extends \RecursiveArrayIterator
         $this->iterator = new \ArrayIterator(self::getKeys($formBuilder));
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->iterator->rewind();
     }
 
-    public function valid()
+    public function valid(): bool
     {
         return $this->iterator->valid();
     }
@@ -90,14 +87,14 @@ class FormBuilderIterator extends \RecursiveArrayIterator
     /**
      * @return string
      */
-    public function key()
+    public function key(): string
     {
         $name = $this->iterator->current();
 
         return sprintf('%s_%s', $this->prefix, $name);
     }
 
-    public function next()
+    public function next(): void
     {
         $this->iterator->next();
     }
@@ -105,7 +102,7 @@ class FormBuilderIterator extends \RecursiveArrayIterator
     /**
      * @return FormBuilderInterface
      */
-    public function current()
+    public function current(): FormBuilderInterface
     {
         return $this->formBuilder->get($this->iterator->current());
     }
@@ -113,12 +110,12 @@ class FormBuilderIterator extends \RecursiveArrayIterator
     /**
      * @return FormBuilderIterator
      */
-    public function getChildren()
+    public function getChildren(): FormBuilderIterator
     {
         return new self($this->formBuilder->get($this->iterator->current()), $this->key());
     }
 
-    public function hasChildren()
+    public function hasChildren(): bool
     {
         return \count(self::getKeys($this->current())) > 0;
     }
@@ -126,7 +123,7 @@ class FormBuilderIterator extends \RecursiveArrayIterator
     /**
      * @return array<string|int, string|int>
      */
-    private static function getKeys(FormBuilderInterface $formBuilder)
+    private static function getKeys(FormBuilderInterface $formBuilder): array
     {
         return array_keys($formBuilder->all());
     }

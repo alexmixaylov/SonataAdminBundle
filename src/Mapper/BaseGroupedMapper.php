@@ -123,6 +123,10 @@ abstract class BaseGroupedMapper extends BaseMapper implements MapperInterface
                 throw new \LogicException(sprintf('You should open tab before adding new group "%s".', $name));
             }
 
+            if (!\is_array($tabs)) {
+                $tabs = [];
+            }
+
             if (!isset($tabs[$name])) {
                 $tabs[$name] = [];
             }
@@ -158,6 +162,11 @@ abstract class BaseGroupedMapper extends BaseMapper implements MapperInterface
             }
 
             $groups = $this->getGroups();
+
+            if (!\is_array($groups)) {
+                $groups = [];
+            }
+
             if (!isset($groups[$code])) {
                 $groups[$code] = [];
             }

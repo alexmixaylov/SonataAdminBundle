@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sonata\AdminBundle\Util;
 
+use ArrayIterator;
+use RecursiveIterator;
 use Symfony\Component\Form\FormView;
 
 /**
@@ -23,21 +25,21 @@ use Symfony\Component\Form\FormView;
 class FormViewIterator implements \RecursiveIterator
 {
     /**
-     * @var \ArrayIterator<string, FormView>
+     * @var ArrayIterator<string, FormView>
      */
-    protected $iterator;
+    protected ArrayIterator $iterator;
 
     public function __construct(FormView $formView)
     {
         $this->iterator = $formView->getIterator();
     }
 
-    public function getChildren()
+    public function getChildren(): ?RecursiveIterator
     {
         return new self($this->current());
     }
 
-    public function hasChildren()
+    public function hasChildren(): bool
     {
         return \count($this->current()->children) > 0;
     }
@@ -45,27 +47,27 @@ class FormViewIterator implements \RecursiveIterator
     /**
      * @return FormView
      */
-    public function current()
+    public function current(): FormView
     {
         return $this->iterator->current();
     }
 
-    public function next()
+    public function next(): void
     {
         $this->iterator->next();
     }
 
-    public function key()
+    public function key(): mixed
     {
         return $this->current()->vars['id'];
     }
 
-    public function valid()
+    public function valid(): bool
     {
         return $this->iterator->valid();
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->iterator->rewind();
     }
