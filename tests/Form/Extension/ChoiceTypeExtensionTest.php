@@ -65,21 +65,6 @@ class ChoiceTypeExtensionTest extends TestCase
             ->getFormFactory();
     }
 
-    public function testExtendedType(): void
-    {
-        $extension = new ChoiceTypeExtension();
-
-        static::assertSame(
-            ChoiceType::class,
-            $extension->getExtendedType()
-        );
-
-        static::assertSame(
-            [ChoiceType::class],
-            ChoiceTypeExtension::getExtendedTypes()
-        );
-    }
-
     public function testDefaultOptionsWithSortable(): void
     {
         $view = $this->factory

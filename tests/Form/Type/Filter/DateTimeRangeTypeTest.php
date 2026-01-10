@@ -17,7 +17,7 @@ use Sonata\AdminBundle\Form\Type\Filter\DateTimeRangeType;
 use Sonata\Form\Type\DateTimeRangeType as FormDateTimeRangeType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class DateTimeRangeTypeTest extends BaseTypeTest
 {

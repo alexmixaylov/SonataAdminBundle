@@ -172,21 +172,11 @@ class FormTypeFieldExtension extends AbstractTypeExtension
     }
 
     /**
-     * @return string
-     *
-     * @phpstan-return class-string<FormTypeInterface>
-     */
-    public function getExtendedType()
-    {
-        return FormType::class;
-    }
-
-    /**
      * @return string[]
      *
      * @phpstan-return class-string<FormTypeInterface>[]
      */
-    public static function getExtendedTypes()
+    public static function getExtendedTypes(): iterable
     {
         return [FormType::class];
     }

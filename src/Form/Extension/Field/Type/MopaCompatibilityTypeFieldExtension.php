@@ -52,22 +52,12 @@ class MopaCompatibilityTypeFieldExtension extends AbstractTypeExtension
         $view->vars['horizontal_input_wrapper_class'] = $options['horizontal_input_wrapper_class'];
     }
 
-    /**
-     * @return string
-     *
-     * @phpstan-return class-string<FormTypeInterface>
-     */
-    public function getExtendedType()
-    {
-        return FormType::class;
-    }
-
-    /**
+     /**
      * @return string[]
      *
      * @phpstan-return class-string<FormTypeInterface>[]
      */
-    public static function getExtendedTypes()
+    public static function getExtendedTypes(): iterable
     {
         return [FormType::class];
     }

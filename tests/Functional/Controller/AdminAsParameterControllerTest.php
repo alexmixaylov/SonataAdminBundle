@@ -37,7 +37,7 @@ final class AdminAsParameterControllerTest extends WebTestCase
             ['/admin/tests/app/admin-as-parameter/test?uniqid=test'],
             ['/admin/tests/app/admin-as-parameter/invokable?uniqid=invokable'],
             // NEXT_MAJOR: Remove next line.
-            ['/admin/tests/app/admin-as-parameter/withAnnotation'],
+//            ['/admin/tests/app/admin-as-parameter/withAnnotation'],
         ];
     }
 

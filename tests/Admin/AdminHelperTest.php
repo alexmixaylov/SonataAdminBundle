@@ -57,12 +57,12 @@ class AdminHelperTest extends TestCase
     }
 
     /**
-     * NEXT_MAJOR: Remove this test.
-     *
      * @group legacy
      */
     public function testDeprecatedConstructingWithoutPropertyAccessor(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $pool = new Pool(new Container());
 
         $this->expectDeprecation(sprintf(
@@ -76,6 +76,7 @@ class AdminHelperTest extends TestCase
 
         new AdminHelper($pool);
     }
+
 
     public function testGetChildFormBuilder(): void
     {

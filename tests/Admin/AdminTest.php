@@ -88,10 +88,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\Mapping\MemberMetadata;
 use Symfony\Component\Validator\Mapping\PropertyMetadataInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminTest extends TestCase
 {
@@ -1485,43 +1485,6 @@ class AdminTest extends TestCase
             ->willReturn('fooTranslated');
 
         static::assertSame('fooTranslated', $admin->trans('foo', ['name' => 'Andrej'], 'fooMessageDomain'));
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testTransChoice(): void
-    {
-        $admin = new PostAdmin('sonata.post.admin.post', 'NewsBundle\Entity\Post', 'Sonata\NewsBundle\Controller\PostAdminController');
-        $admin->setTranslationDomain('fooMessageDomain');
-
-        $translator = $this->createMock(TranslatorInterface::class);
-        $admin->setTranslator($translator);
-
-        $translator->expects(static::once())
-            ->method('transChoice')
-            ->with(static::equalTo('foo'), static::equalTo(2), static::equalTo([]), static::equalTo('fooMessageDomain'))
-            ->willReturn('fooTranslated');
-
-        static::assertSame('fooTranslated', $admin->transChoice('foo', 2));
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testTransChoiceWithMessageDomain(): void
-    {
-        $admin = new PostAdmin('sonata.post.admin.post', 'NewsBundle\Entity\Post', 'Sonata\NewsBundle\Controller\PostAdminController');
-
-        $translator = $this->createMock(TranslatorInterface::class);
-        $admin->setTranslator($translator);
-
-        $translator->expects(static::once())
-            ->method('transChoice')
-            ->with(static::equalTo('foo'), static::equalTo(2), static::equalTo(['name' => 'Andrej']), static::equalTo('fooMessageDomain'))
-            ->willReturn('fooTranslated');
-
-        static::assertSame('fooTranslated', $admin->transChoice('foo', 2, ['name' => 'Andrej'], 'fooMessageDomain'));
     }
 
     public function testSetFilterPersister(): void

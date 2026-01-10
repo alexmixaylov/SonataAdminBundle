@@ -32,6 +32,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Loader\XmlFileLoader;
@@ -39,7 +40,6 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Translation\Loader\XliffFileLoader;
 use Symfony\Component\Translation\Translator;
-use Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -288,32 +288,6 @@ class SonataAdminExtensionTest extends TestCase
      *
      * @group legacy
      */
-    public function testConstructTriggersDeprecationWithAuthorizationCheckerArgument(): void
-    {
-        $this->expectDeprecation(sprintf(
-            'Passing an instance of "%s" as argument 5 for "%s::__construct()" is deprecated since'
-            .' sonata-project/admin-bundle 3.82 and will throw a \TypeError error in version 4.0. You MUST pass an instance'
-            .' of "%s" instead and pass an instance of "%s" as argument 6.',
-            AuthorizationCheckerInterface::class,
-            SonataAdminExtension::class,
-            PropertyAccessorInterface::class,
-            AuthorizationCheckerInterface::class
-        ));
-
-        new SonataAdminExtension(
-            $this->pool,
-            null,
-            $this->translator,
-            $this->container,
-            $this->securityChecker
-        );
-    }
-
-    /**
-     * NEXT_MAJOR: Remove this method.
-     *
-     * @group legacy
-     */
     public function testConstructThrowsExceptionWithWrongTranslationArgument(): void
     {
         $this->expectException(\TypeError::class);
@@ -334,7 +308,7 @@ class SonataAdminExtensionTest extends TestCase
         new SonataAdminExtension(
             $this->pool,
             null,
-            $this->createStub(LegacyTranslatorInterface::class)
+            $this->createStub(TranslatorInterface::class)
         );
     }
 

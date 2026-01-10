@@ -42,7 +42,6 @@ use Sonata\Exporter\Exporter;
 use Sonata\Exporter\Source\SourceIteratorInterface;
 use Sonata\Exporter\Writer\JsonWriter;
 use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\Form;
@@ -177,9 +176,7 @@ class CRUDControllerTest extends TestCase
     {
         $this->httpMethodParameterOverride = Request::getHttpMethodParameterOverride();
         $this->container = new Container();
-        $this->request = new Request();
         $this->pool = new Pool($this->container, ['foo.admin']);
-        $this->request->attributes->set('_sonata_admin', 'foo.admin');
         $this->admin = $this->getMockBuilder(AbstractAdmin::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -188,8 +185,6 @@ class CRUDControllerTest extends TestCase
         $this->template = '';
 
         $this->templateRegistry = $this->createStub(TemplateRegistryInterface::class);
-
-        $this->session = new Session(new MockArraySessionStorage());
 
         $twig = $this->getMockBuilder(Environment::class)
             ->disableOriginalConstructor()
@@ -244,11 +239,18 @@ class CRUDControllerTest extends TestCase
 
         $this->logger = $this->createMock(LoggerInterface::class);
 
+        $this->request = new Request();
+        $this->request->attributes->set('_sonata_admin', 'foo.admin');
+
+        $this->session = new Session(new MockArraySessionStorage());
+        $this->request->setSession($this->session);
+
         $requestStack = new RequestStack();
         $requestStack->push($this->request);
 
         $this->kernel = $this->createMock(KernelInterface::class);
 
+        $this->container->set('sonata.admin.pool', $this->pool);
         $this->container->set('sonata.admin.pool.do-not-use', $this->pool);
         $this->container->set('request_stack', $requestStack);
         $this->container->set('foo.admin', $this->admin);
@@ -346,6 +348,8 @@ class CRUDControllerTest extends TestCase
         $this->controller = new CRUDController();
         $this->controller->setContainer($this->container);
 
+        $this->configureController($this->controller);
+
         // Make some methods public to test them
         $testedMethods = [
             'renderJson',
@@ -357,12 +361,7 @@ class CRUDControllerTest extends TestCase
             'addFlash',
         ];
         foreach ($testedMethods as $testedMethod) {
-            // NEXT_MAJOR: Remove this check and only use CRUDController
-            if (method_exists(CRUDController::class, $testedMethod)) {
-                $method = new \ReflectionMethod(CRUDController::class, $testedMethod);
-            } else {
-                $method = new \ReflectionMethod(Controller::class, $testedMethod);
-            }
+            $method = new \ReflectionMethod(CRUDController::class, $testedMethod);
 
             $method->setAccessible(true);
             $this->protectedTestedMethods[$testedMethod] = $method;
@@ -630,6 +629,7 @@ class CRUDControllerTest extends TestCase
 
         $controller = new PreCRUDController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $response = $controller->listAction();
         static::assertInstanceOf(Response::class, $response);
@@ -813,6 +813,7 @@ class CRUDControllerTest extends TestCase
 
         $controller = new PreCRUDController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $response = $controller->showAction();
         static::assertInstanceOf(Response::class, $response);
@@ -1028,6 +1029,7 @@ class CRUDControllerTest extends TestCase
 
         $controller = new PreCRUDController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $response = $controller->deleteAction(null);
         static::assertInstanceOf(Response::class, $response);
@@ -1593,6 +1595,7 @@ class CRUDControllerTest extends TestCase
 
         $controller = new PreCRUDController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $response = $controller->editAction();
         static::assertInstanceOf(Response::class, $response);
@@ -2157,6 +2160,7 @@ class CRUDControllerTest extends TestCase
 
         $controller = new PreCRUDController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $response = $controller->createAction();
         static::assertInstanceOf(Response::class, $response);
@@ -3963,6 +3967,7 @@ class CRUDControllerTest extends TestCase
     {
         $controller = new BatchAdminController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $batchActions = [$actionName => ['label' => 'Foo Bar', 'ask_confirmation' => false]];
 
@@ -4045,6 +4050,7 @@ class CRUDControllerTest extends TestCase
     {
         $controller = new BatchAdminController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $batchActions = ['foo' => ['label' => 'Foo Bar', 'ask_confirmation' => false]];
 
@@ -4114,6 +4120,7 @@ class CRUDControllerTest extends TestCase
     {
         $controller = new BatchAdminController();
         $controller->setContainer($this->container);
+        $this->configureController($controller);
 
         $batchActions = ['bar' => ['label' => 'Foo Bar', 'ask_confirmation' => false]];
 
@@ -4270,5 +4277,12 @@ class CRUDControllerTest extends TestCase
             ->method('trans')
             ->with(static::equalTo($id), static::equalTo($parameters), static::equalTo($domain), static::equalTo($locale))
             ->willReturn($id);
+    }
+
+    private function configureController(object $controller): void
+    {
+        $method = new \ReflectionMethod(CRUDController::class, 'configure');
+        $method->setAccessible(true);
+        $method->invoke($controller);
     }
 }
