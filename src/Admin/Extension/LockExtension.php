@@ -40,7 +40,7 @@ class LockExtension extends AbstractAdminExtension
         $admin = $form->getAdmin();
         $formBuilder = $form->getFormBuilder();
 
-        $formBuilder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($admin) {
+        $formBuilder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($admin): void {
             $data = $event->getData();
             $form = $event->getForm();
 

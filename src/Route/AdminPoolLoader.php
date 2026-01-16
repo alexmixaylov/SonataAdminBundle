@@ -77,7 +77,7 @@ class AdminPoolLoader extends Loader
         foreach ($this->getAdminServiceIds() as $id) {
             $admin = $this->pool->getInstance($id);
 
-            foreach ($admin->getRoutes()->getElements() as $code => $route) {
+            foreach ($admin->getRoutes()->getElements() as $route) {
                 $collection->add($route->getDefault('_sonata_name'), $route);
             }
 

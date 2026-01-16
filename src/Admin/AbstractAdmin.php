@@ -3752,7 +3752,7 @@ EOT;
         $this->loaded['form'] = true;
 
         $formBuilder = $this->getFormBuilder();
-        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event): void {
             $this->preValidate($event->getData());
         }, 100);
 
@@ -3811,7 +3811,7 @@ EOT;
 
         $metadata->addConstraint(new InlineConstraint([
             'service' => $this,
-            'method' => static function (ErrorElement $errorElement, $object) use ($admin) {
+            'method' => static function (ErrorElement $errorElement, $object) use ($admin): void {
                 /* @var \Sonata\AdminBundle\Admin\AdminInterface $admin */
 
                 // This avoid the main validation to be cascaded to children

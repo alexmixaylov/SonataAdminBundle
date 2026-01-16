@@ -27,19 +27,6 @@ use Knp\Menu\ItemInterface;
 interface MenuBuilderInterface
 {
     /**
-     * NEXT_MAJOR: remove this method.
-     *
-     * @param string $action
-     *
-     * @return ItemInterface|bool
-     *
-     * @deprecated since sonata-project/admin-bundle 3.24
-     *
-     * @phpstan-param AdminInterface<object>|null $childAdmin
-     */
-    public function buildSideMenu($action, ?AdminInterface $childAdmin = null);
-
-    /**
      * Build the tab menu related to the current action.
      *
      * @param string $action

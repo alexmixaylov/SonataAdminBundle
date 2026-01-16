@@ -120,14 +120,9 @@ class CRUDController implements ContainerAwareInterface
         return $response;
     }
 
-    final public function setAdmin(AdminInterface $admin): void
+    protected function hasAdmin(): bool
     {
-        $this->admin = $admin;
-    }
-
-    final public function setRequest(Request $request): void
-    {
-        $this->request = $request;
+        return $this->admin instanceof AdminInterface;
     }
 
     protected function getAdmin(): AdminInterface
@@ -137,6 +132,15 @@ class CRUDController implements ContainerAwareInterface
         }
 
         return $this->admin;
+    }
+    final public function setAdmin(AdminInterface $admin): void
+    {
+        $this->admin = $admin;
+    }
+
+    final public function setRequest(Request $request): void
+    {
+        $this->request = $request;
     }
 
     /**
@@ -184,27 +188,11 @@ class CRUDController implements ContainerAwareInterface
         return $this->originalRender($view, $this->addRenderExtraParams($parameters), $response);
     }
 
-    protected function ensureAdmin(): void
+    private function bootAdmin(): void
     {
-        if (null !== $this->admin) {
-            return;
+        if (!$this->admin) {
+            $this->configureAdmin($this->getRequest());
         }
-
-        $request = $this->getRequest();
-        if (null === $request) {
-            return;
-        }
-
-        $adminCode = $request->attributes->get('_sonata_admin');
-        if (!$adminCode) {
-            return;
-        }
-
-        /** @var Pool $pool */
-        $pool = $this->container->get('sonata.admin.pool.do-not-use');
-        $this->admin = $pool->getAdminByAdminCode($adminCode);
-
-        $this->admin->setRequest($request);
     }
 
     /**
@@ -216,7 +204,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function listAction()
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $request = $this->getRequest();
 
@@ -239,9 +227,7 @@ class CRUDController implements ContainerAwareInterface
         // set the theme for the current Admin Form
         $this->setFormTheme($formView, $this->admin->getFilterTheme());
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('list');
-        // $template = $this->templateRegistry->getTemplate('list');
+         $template = $this->templateRegistry->getTemplate('list');
 
         return $this->renderWithExtraParams($template, [
             'action' => 'list',
@@ -305,7 +291,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function deleteAction($id) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $request = $this->getRequest();
         $this->assertObjectExists($request, true);
@@ -381,9 +367,7 @@ class CRUDController implements ContainerAwareInterface
             return $this->redirectTo($object);
         }
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('delete');
-        // $template = $this->templateRegistry->getTemplate('delete');
+         $template = $this->templateRegistry->getTemplate('delete');
 
         return $this->renderWithExtraParams($template, [
             'object' => $object,
@@ -404,7 +388,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function editAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
@@ -513,9 +497,7 @@ class CRUDController implements ContainerAwareInterface
         // set the theme for the current Admin Form
         $this->setFormTheme($formView, $this->admin->getFormTheme());
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate($templateKey);
-        // $template = $this->templateRegistry->getTemplate($templateKey);
+        $template = $this->templateRegistry->getTemplate($templateKey);
 
         return $this->renderWithExtraParams($template, [
             'action' => 'edit',
@@ -535,7 +517,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function batchAction()
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $request = $this->getRequest();
         $restMethod = $request->getMethod();
@@ -686,7 +668,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function createAction()
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $request = $this->getRequest();
 
@@ -790,9 +772,7 @@ class CRUDController implements ContainerAwareInterface
         // set the theme for the current Admin Form
         $this->setFormTheme($formView, $this->admin->getFormTheme());
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate($templateKey);
-        // $template = $this->templateRegistry->getTemplate($templateKey);
+        $template = $this->templateRegistry->getTemplate($templateKey);
 
         return $this->renderWithExtraParams($template, [
             'action' => 'create',
@@ -814,7 +794,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function showAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
@@ -847,9 +827,7 @@ class CRUDController implements ContainerAwareInterface
         $fields = $this->admin->getShow();
         \assert($fields instanceof FieldDescriptionCollection);
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('show');
-        // $template = $this->templateRegistry->getTemplate('show');
+        $template = $this->templateRegistry->getTemplate('show');
 
         return $this->renderWithExtraParams($template, [
             'action' => 'show',
@@ -870,7 +848,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function historyAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         if (isset(\func_get_args()[0])) {
             @trigger_error(sprintf(
@@ -904,9 +882,7 @@ class CRUDController implements ContainerAwareInterface
 
         $revisions = $reader->findRevisions($this->admin->getClass(), $id);
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('history');
-        // $template = $this->templateRegistry->getTemplate('history');
+        $template = $this->templateRegistry->getTemplate('history');
 
         return $this->renderWithExtraParams($template, [
             'action' => 'history',
@@ -929,7 +905,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function historyViewRevisionAction($id = null, $revision = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $request = $this->getRequest();
         $this->assertObjectExists($request, true);
@@ -966,9 +942,7 @@ class CRUDController implements ContainerAwareInterface
 
         $this->admin->setSubject($object);
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('show');
-        // $template = $this->templateRegistry->getTemplate('show');
+        $template = $this->templateRegistry->getTemplate('show');
 
         return $this->renderWithExtraParams($template, [
             'action' => 'show',
@@ -991,7 +965,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function historyCompareRevisionsAction($id = null, $baseRevision = null, $compareRevision = null) // NEXT_MAJOR: Remove the unused $id parameter
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $this->admin->checkAccess('historyCompareRevisions');
 
@@ -1060,9 +1034,7 @@ class CRUDController implements ContainerAwareInterface
 
         $this->admin->setSubject($baseObject);
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('show_compare');
-        // $template = $this->templateRegistry->getTemplate('show_compare');
+        $template = $this->templateRegistry->getTemplate('show_compare');
 
         return $this->renderWithExtraParams($template, [
             'action' => 'show',
@@ -1082,7 +1054,7 @@ class CRUDController implements ContainerAwareInterface
      */
     public function exportAction(Request $request)
     {
-        $this->ensureAdmin();
+        $this->bootAdmin();
 
         $this->admin->checkAccess('export');
 
@@ -1125,108 +1097,6 @@ class CRUDController implements ContainerAwareInterface
             $filename,
             $this->admin->getDataSourceIterator()
         );
-    }
-
-    /**
-     * Returns the Response object associated to the acl action.
-     *
-     * @param int|string|null $deprecatedId
-     *
-     * @throws AccessDeniedException If access is not granted
-     * @throws NotFoundHttpException If the object does not exist or the ACL is not enabled
-     *
-     * @return Response|RedirectResponse
-     */
-    public function aclAction($deprecatedId = null) // NEXT_MAJOR: Remove the unused $id parameter
-    {
-        $this->ensureAdmin();
-
-        if (isset(\func_get_args()[0])) {
-            @trigger_error(sprintf(
-                'Support for the "id" route param as argument 1 at `%s()` is deprecated since'
-                .' sonata-project/admin-bundle 3.62 and will be removed in 4.0,'
-                .' use `AdminInterface::getIdParameter()` instead.',
-                __METHOD__
-            ), \E_USER_DEPRECATED);
-        }
-
-        if (!$this->admin->isAclEnabled()) {
-            throw $this->createNotFoundException('ACL are not enabled for this admin');
-        }
-
-        if ($this->container->hasParameter('sonata.admin.security.fos_user_autoconfigured')
-            && $this->getParameter('sonata.admin.security.fos_user_autoconfigured')) {
-            @trigger_error(
-                'Not configuring "acl_user_manager" and using ACL security handler is deprecated since'
-                .' sonata-project/admin-bundle 3.78 and will not work on 4.0. You MUST specify the service name'
-                .' under "sonata_admin.security.acl_user_manager" option.',
-                \E_USER_DEPRECATED
-            );
-        }
-
-        $request = $this->getRequest();
-        $this->assertObjectExists($request, true);
-
-        $id = $request->get($this->admin->getIdParameter());
-        \assert(null !== $id);
-        $object = $this->admin->getObject($id);
-        \assert(null !== $object);
-
-        $this->admin->checkAccess('acl', $object);
-
-        $this->admin->setSubject($object);
-        $aclUsers = $this->getAclUsers();
-        $aclRoles = $this->getAclRoles();
-
-        $adminObjectAclManipulator = $this->get('sonata.admin.object.manipulator.acl.admin.do-not-use');
-        $adminObjectAclData = new AdminObjectAclData(
-            $this->admin,
-            $object,
-            $aclUsers,
-            $adminObjectAclManipulator->getMaskBuilderClass(),
-            $aclRoles
-        );
-
-        $aclUsersForm = $adminObjectAclManipulator->createAclUsersForm($adminObjectAclData);
-        $aclRolesForm = $adminObjectAclManipulator->createAclRolesForm($adminObjectAclData);
-
-        if (Request::METHOD_POST === $request->getMethod()) {
-            if ($request->request->has(AdminObjectAclManipulator::ACL_USERS_FORM_NAME)) {
-                $form = $aclUsersForm;
-                $updateMethod = 'updateAclUsers';
-            } elseif ($request->request->has(AdminObjectAclManipulator::ACL_ROLES_FORM_NAME)) {
-                $form = $aclRolesForm;
-                $updateMethod = 'updateAclRoles';
-            }
-
-            if (isset($form, $updateMethod)) {
-                $form->handleRequest($request);
-
-                if ($form->isValid()) {
-                    $adminObjectAclManipulator->$updateMethod($adminObjectAclData);
-                    $this->addFlash(
-                        'sonata_flash_success',
-                        $this->trans('flash_acl_edit_success', [], 'SonataAdminBundle')
-                    );
-
-                    return new RedirectResponse($this->admin->generateObjectUrl('acl', $object));
-                }
-            }
-        }
-
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        $template = $this->admin->getTemplate('acl');
-        // $template = $this->templateRegistry->getTemplate('acl');
-
-        return $this->renderWithExtraParams($template, [
-            'action' => 'acl',
-            'permissions' => $adminObjectAclData->getUserPermissions(),
-            'object' => $object,
-            'users' => $aclUsers,
-            'roles' => $aclRoles,
-            'aclUsersForm' => $aclUsersForm->createView(),
-            'aclRolesForm' => $aclRolesForm->createView(),
-        ]);
     }
 
     /**
@@ -1416,14 +1286,10 @@ class CRUDController implements ContainerAwareInterface
     protected function getBaseTemplate()
     {
         if ($this->isXmlHttpRequest()) {
-            // NEXT_MAJOR: Remove this line and use commented line below it instead
-            return $this->admin->getTemplate('ajax');
-            // return $this->templateRegistry->getTemplate('ajax');
+            return $this->templateRegistry->getTemplate('ajax');
         }
 
-        // NEXT_MAJOR: Remove this line and use commented line below it instead
-        return $this->admin->getTemplate('layout');
-        // return $this->templateRegistry->getTemplate('layout');
+        return $this->templateRegistry->getTemplate('layout');
     }
 
     /**
@@ -1598,71 +1464,6 @@ class CRUDController implements ContainerAwareInterface
         $request = $this->getRequest();
 
         return null !== $request->get('btn_preview_decline');
-    }
-
-    /**
-     * Gets ACL users.
-     *
-     * @return \Traversable
-     */
-    protected function getAclUsers()
-    {
-        // NEXT_MAJOR: Remove this code until the commented code and uncomment it;
-        $aclUsers = [];
-
-        $userManagerServiceName = $this->container->getParameter('sonata.admin.security.acl_user_manager');
-        if (null !== $userManagerServiceName && $this->has($userManagerServiceName)) {
-            $userManager = $this->get($userManagerServiceName);
-
-            if (method_exists($userManager, 'findUsers')) {
-                $aclUsers = $userManager->findUsers();
-            }
-        }
-
-        return \is_array($aclUsers) ? new \ArrayIterator($aclUsers) : $aclUsers;
-
-//        if (!$this->has('sonata.admin.security.acl_user_manager')) {
-//            return new \ArrayIterator([]);
-//        }
-//
-//        $aclUsers = $this->get('sonata.admin.security.acl_user_manager')->findUsers();
-//
-//        return \is_array($aclUsers) ? new \ArrayIterator($aclUsers) : $aclUsers;
-    }
-
-    /**
-     * Gets ACL roles.
-     *
-     * @return \Traversable
-     */
-    protected function getAclRoles()
-    {
-        $aclRoles = [];
-        $roleHierarchy = $this->container->getParameter('security.role_hierarchy.roles');
-        $pool = $this->container->get('sonata.admin.pool.do-not-use');
-
-        foreach ($pool->getAdminServiceIds() as $id) {
-            try {
-                $admin = $pool->getInstance($id);
-            } catch (\Exception $e) {
-                continue;
-            }
-
-            $baseRole = $admin->getSecurityHandler()->getBaseRole($admin);
-            foreach ($admin->getSecurityInformation() as $role => $permissions) {
-                $role = sprintf($baseRole, $role);
-                $aclRoles[] = $role;
-            }
-        }
-
-        foreach ($roleHierarchy as $name => $roles) {
-            $aclRoles[] = $name;
-            $aclRoles = array_merge($aclRoles, $roles);
-        }
-
-        $aclRoles = array_unique($aclRoles);
-
-        return new \ArrayIterator($aclRoles);
     }
 
     /**
