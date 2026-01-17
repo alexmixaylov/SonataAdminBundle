@@ -2,15 +2,6 @@
 
 declare(strict_types=1);
 
-/*
- * This file is part of the Sonata Project package.
- *
- * (c) Thomas Rabaix <thomas.rabaix@sonata-project.org>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Sonata\AdminBundle\Controller;
 
 use Doctrine\Inflector\InflectorFactory;
@@ -19,16 +10,12 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Admin\AdminInterface;
-use Sonata\AdminBundle\Admin\Pool;
 use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
 use Sonata\AdminBundle\Exception\LockException;
 use Sonata\AdminBundle\Exception\ModelManagerException;
 use Sonata\AdminBundle\Exception\ModelManagerThrowable;
 use Sonata\AdminBundle\FieldDescription\FieldDescriptionCollection;
-use Sonata\AdminBundle\Model\AuditManagerInterface;
 use Sonata\AdminBundle\Templating\TemplateRegistryInterface;
-use Sonata\AdminBundle\Util\AdminObjectAclData;
-use Sonata\AdminBundle\Util\AdminObjectAclManipulator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRenderer;
@@ -54,9 +41,10 @@ use Twig\Environment;
  */
 class CRUDController implements ContainerAwareInterface
 {
-    protected ?AdminInterface $admin = null;
+    private ?AdminInterface $admin = null;
     protected ?Request $request = null;
     protected ?ContainerInterface $container = null;
+
 
     public function setContainer(ContainerInterface $container = null): void
     {
@@ -119,20 +107,35 @@ class CRUDController implements ContainerAwareInterface
 
         return $response;
     }
-
-    protected function hasAdmin(): bool
+    private function bootAdmin(): void
     {
-        return $this->admin instanceof AdminInterface;
+        if ($this->admin === null) {
+            $this->configureAdmin($this->getRequest());
+        }
+
+        if ($this->templateRegistry === null) {
+            $this->templateRegistry = $this->container->get(
+                sprintf('%s.template_registry', $this->admin->getCode())
+            );
+        }
     }
 
     protected function getAdmin(): AdminInterface
     {
+        $this->bootAdmin();
+
         if (null === $this->admin) {
             throw new \LogicException('Admin is not set on CRUDController.');
         }
 
         return $this->admin;
     }
+
+    protected function hasAdmin(): bool
+    {
+        return $this->admin instanceof AdminInterface;
+    }
+
     final public function setAdmin(AdminInterface $admin): void
     {
         $this->admin = $admin;
@@ -186,13 +189,6 @@ class CRUDController implements ContainerAwareInterface
     {
         // NEXT_MAJOR: Remove method alias and use $this->render() directly.
         return $this->originalRender($view, $this->addRenderExtraParams($parameters), $response);
-    }
-
-    private function bootAdmin(): void
-    {
-        if (!$this->admin) {
-            $this->configureAdmin($this->getRequest());
-        }
     }
 
     /**
